@@ -21,7 +21,7 @@ pub mod todo_list_app {
         Ok(())
     }
 
-    pub fn updating_task( ctx: Context<DeleteTask>, is_done: bool) -> Result<()>{
+    pub fn updating_task( ctx: Context<UpdatingTask>, is_done: bool) -> Result<()>{
         let task = &mut ctx.accounts.task;
         let author = &mut ctx.accounts.author;
         let clock = Clock::get().unwrap();
@@ -31,7 +31,16 @@ pub mod todo_list_app {
         Ok(())
     }
 
-
+    pub fn deleting_task(ctx: Context<DeletingTask>) -> Result<()> {
+        let task = &mut ctx.accounts.task;
+        let author = &ctx.accounts.author; 
+        let clock = Clock::get().unwrap();
+        task.author = *author.key;
+        task.is_done = true;
+        task.updated_at = clock.unix_timestamp;
+        Ok(())
+    }
+        
 
 
 
@@ -48,7 +57,7 @@ pub struct AddingTask<'info> {
 }
 
 #[derive(Accounts)]
-pub struct UpdateAccount<'info> {
+pub struct UpdatingTask<'info> {
     #[account(mut, has_one = author)]
     pub task: Account<'info, Task>,
     pub author: Signer<'info>,
@@ -56,7 +65,7 @@ pub struct UpdateAccount<'info> {
 
 
 #[derive(Accounts)]
-pub struct DeleteTask<'info> {
+pub struct DeletingTask<'info> {
     #[account(mut)]
     pub task: Account<'info, Task>,
     pub author: Signer<'info>,
